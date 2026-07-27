@@ -10,19 +10,19 @@ private:
         Node *next;
     };
     Node *head;
+    Node *tail;
     Node *pointTo;
     int size;
 
 public:
     UnsortedType();
-    // ~UnsortedType();
+    ~UnsortedType();
     int Length();
     void Insert(T value);
-    // void Search(T value, bool &found);
-    // void Delete(T value);
-    // void MakeEmpty();
-    // void GetNext(T &value);
-    // void Reset();
-    void Print();
+    void Search(T value, bool &found);
+    void Delete(T value);
+    void MakeEmpty();
+    void GetNext(T &value);
+    void Reset();
 };
-#endif
+#endif // UNSORTEDTYPE_H

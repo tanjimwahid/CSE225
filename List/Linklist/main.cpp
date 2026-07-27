@@ -106,23 +106,45 @@ public:
 
     void popBack()
     {
-
-        Node *temp = Head;
-
         if (Head == NULL)
         {
             cout << "Error: Null Head " << endl;
+            return;
         }
-        else
+
+        if (Head == Tail) // only one node
         {
-            while (temp->next != Tail)
-            {
-                temp = temp->next;
-            }
-            delete Tail;
-            temp->next = NULL;
-            Tail = temp;
+            delete Head;
+            Head = Tail = NULL;
+            return;
         }
+
+        Node *temp = Head;
+        while (temp->next != Tail)
+        {
+            temp = temp->next;
+        }
+        delete Tail;
+        temp->next = NULL;
+        Tail = temp;
+    }
+
+    void IRSearch(int &value, int key)
+    {
+        Node *temp = Head;
+        int length = 0;
+        while (temp != NULL)
+        {
+            if (length == key - 1)
+            {
+                cout << "Value at : " << key << " : " << temp->data << endl;
+                value = temp->data;
+                return;
+            }
+            temp = temp->next;
+            length++;
+        }
+        cout << "Error: Key is higher than length" << endl;
     }
 
     void getVal()
@@ -155,8 +177,15 @@ int main()
 
     // ll.insert(44, 2);
     ll.getVal();
-    ll.popFront();
-    ll.popBack();
+    // ll.popFront();
+    // ll.popBack();
+
+    int value;
+
+    ll.IRSearch(value, 1);
+    ll.IRSearch(value, 2);
+    ll.IRSearch(value, 5);
+    ll.IRSearch(value, 30);
 
     // ll.insert(44, 27);
     ll.getVal();
