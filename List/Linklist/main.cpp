@@ -12,15 +12,6 @@ public:
         this->data = val;
         this->next = NULL;
     }
-
-    ~Node()
-    {
-        if (next != NULL)
-        {
-            delete next;
-            next = NULL;
-        }
-    }
 };
 
 class MyList
@@ -38,10 +29,13 @@ public:
 
     ~MyList()
     {
-        if (Head != NULL)
+        Node *temp;
+
+        while (Head != NULL)
         {
-            delete Head;
-            Head = NULL;
+            temp = Head;
+            Head = Head->next;
+            delete temp;
         }
     }
     void pushFront(int val)
@@ -93,6 +87,44 @@ public:
         temp->next = newNode;
     }
 
+    void popFront()
+    {
+        if (Head == NULL)
+        {
+            cout << " EMPTY ERROR " << endl;
+            return;
+        }
+
+        Node *temp = Head;
+        Head = Head->next;
+        temp->next = NULL;
+        delete temp;
+
+        if (Head == NULL) // we just popped the last node
+            Tail = NULL;
+    }
+
+    void popBack()
+    {
+
+        Node *temp = Head;
+
+        if (Head == NULL)
+        {
+            cout << "Error: Null Head " << endl;
+        }
+        else
+        {
+            while (temp->next != Tail)
+            {
+                temp = temp->next;
+            }
+            delete Tail;
+            temp->next = NULL;
+            Tail = temp;
+        }
+    }
+
     void getVal()
     {
 
@@ -110,21 +142,23 @@ public:
 int main()
 {
     MyList ll;
-    ll.pushFront(3);
     ll.pushFront(4);
+    ll.pushFront(3);
 
-    ll.pushFront(6);
+    ll.pushFront(2);
 
-    ll.pushFront(7);
+    ll.pushFront(1);
+    ll.pushBack(5);
 
-    ll.pushBack(11);
-    ll.pushBack(12);
+    // ll.pushBack(11);
+    // ll.pushBack(12);
 
-    ll.insert(44, 2);
-
+    // ll.insert(44, 2);
     ll.getVal();
+    ll.popFront();
+    ll.popBack();
 
-    ll.insert(44, 27);
+    // ll.insert(44, 27);
     ll.getVal();
 
     return 0;
