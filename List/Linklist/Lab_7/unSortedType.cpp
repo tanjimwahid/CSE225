@@ -23,6 +23,7 @@ void UnsortedType<T>::Insert(T value)
     newNode->data = value;
     if (head == NULL)
     {
+        newNode->next = NULL;
         head = tail = newNode;
         size++;
         return;
@@ -54,7 +55,7 @@ void UnsortedType<T>::Search(T value, bool &found)
         }
     }
 
-    cout << "Not found Error: " << endl;
+    // cout << "Not found Error: " << endl;
 }
 
 template <class T>
