@@ -15,4 +15,13 @@ int main()
     delete ptr1;
     cout << ptr2 << endl;
     cout << ptr1 << endl;
+
+    int *tptr1 = &x;
+    int *tptr2 = &y;
+
+    tptr2 = tptr1;
+    delete tptr1;
+
+    cout << tptr1 << endl;
+    cout << tptr2 << endl;
 }
