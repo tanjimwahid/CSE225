@@ -4,10 +4,10 @@
 #include <string>
 using namespace std;
 
-// template <class T>
-void printStack(StackType<int> &s)
+template <class T>
+void printStack(StackType<T> &s)
 {
-    int temp[SIZE];
+    T temp[SIZE];
     int n = 0;
 
     while (!s.isEmpty())
@@ -25,7 +25,7 @@ void printStack(StackType<int> &s)
         s.push(temp[i]);
 }
 
-bool isBalanced(const string &expr)
+bool isBalanced(string &expr)
 {
     StackType<char> s;
 
@@ -71,6 +71,7 @@ int main()
 
     cout << "\nPushing 3..." << endl;
     stack.push(3);
+    stack.push(6);
 
     cout << "Values in the stack: ";
     printStack(stack);
@@ -83,22 +84,27 @@ int main()
     stack.pop();
 
     cout << "Top item: " << stack.top() << endl;
-    /*
-        cout << "\n===== Task 2: Balanced Parentheses =====" << endl
-             << endl;
 
-        string testCases[] = {
-            "()",
-            "(())()(()())()",
-            "(())()((()",
-            "(()))((()",
-            "((()))))))"};
+    cout << "\n===== Task 2: Balanced Parentheses =====" << endl
+         << endl;
 
-        for (const string &test : testCases)
-        {
-            cout << test << "  ->  "
-                 << (isBalanced(test) ? "Balanced" : "Not Balanced") << endl;
-        }
-    */
+    string testCases[] = {
+        "()",
+        "(())()(()())()",
+        "(())()((()",
+        "(()))((()",
+        "((()))))))"};
+
+    for (int i = 0; i < 5; i++)
+    {
+        // cout << testCases[i];
+        cout << testCases[i] << "  ->  " << (isBalanced(testCases[i]) ? "Balanced" : "Not Balanced") << endl;
+    }
+    // for (const string &test : testCases)
+    // {
+    //     cout << test << "  ->  ";
+    //     //  << (isBalanced(test) ? "Balanced" : "Not Balanced") << endl;
+    // }
+
     return 0;
 }

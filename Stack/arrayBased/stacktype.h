@@ -12,7 +12,7 @@ template <class T>
 class StackType
 {
 private:
-    T *;
+    T *data;
     int topIndex;
 
 public:

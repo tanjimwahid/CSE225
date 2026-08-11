@@ -1,6 +1,5 @@
 #include "stacktype.h"
 #include <iostream>
-
 using namespace std;
 
 template <class T>
@@ -41,7 +40,7 @@ void StackType<T>::push(T value)
     {
         if (isFull())
         {
-            throw FullStack;
+            throw FullStack();
         }
         else
         {
@@ -61,7 +60,7 @@ void StackType<T>::pop()
     try
     {
         if (isEmpty())
-            throw EmptyStack;
+            throw EmptyStack();
         else
         {
             topIndex--;
@@ -79,7 +78,7 @@ T StackType<T>::top()
     try
     {
         if (isEmpty())
-            throw EmptyStack;
+            throw EmptyStack();
         else
         {
             return data[topIndex];
