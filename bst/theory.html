@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>CSE225 Theory Question Bank</title>
+<style>
+@page { size: A4; margin: 14mm 13mm; }
+body { font-family:"DejaVu Sans",Arial,sans-serif; font-size:9.8pt; line-height:1.38; color:#111; }
+h1 { font-size:19pt; text-align:center; margin:0 0 2px 0; }
+.sub { text-align:center; font-size:9.5pt; color:#444; margin-bottom:10px; }
+h2 { font-size:12pt; background:#14532d; color:#fff; padding:4px 7px; margin:15px 0 8px 0; border-radius:3px; page-break-after:avoid; }
+.qa { margin:0 0 9px 0; page-break-inside:avoid; }
+.qq { font-weight:bold; color:#14532d; }
+.aa { margin-left:12px; }
+.aa:before { content:"Ans. "; font-weight:bold; color:#7f1d1d; }
+.plain { margin-left:12px; }
+code { font-family:"DejaVu Sans Mono",Consolas,monospace; font-size:9pt; background:#f2f2f2; padding:0 2px; }
+pre { font-family:"DejaVu Sans Mono",Consolas,monospace; font-size:8.4pt; background:#f6f6f6; border-left:3px solid #14532d; padding:5px 8px; margin:4px 0 5px 12px; white-space:pre; page-break-inside:avoid; }
+table.t { border-collapse:collapse; font-size:9pt; margin:4px 0 6px 12px; }
+table.t td, table.t th { border:1px solid #999; padding:2.5px 6px; }
+table.t th { background:#e6efe8; }
+ul { margin:3px 0 3px 24px; padding:0; }
+li { margin:1px 0; }
+.note { background:#fff7e0; border:1px solid #e0c060; padding:6px 8px; font-size:9pt; margin:8px 0; }
+</style></head><body>
+
+<h1>CSE225 &mdash; Binary Search Trees, Heaps &amp; Priority Queues</h1>
+<div class="sub"><b>Theory / Written Question Bank with Model Answers</b> &nbsp;|&nbsp; Lecture 11, Lecture 12 and Lecture 13<br>
+Definitions &middot; explain-the-logic &middot; write-the-function &middot; time complexity &middot; dry runs &middot; condition-based coding</div>
+
+<div class="note"><b>How to use:</b> cover the answer, write yours on paper, then compare. Code answers are exactly the code style used in the slides (<code>typedef char ItemType;</code>, <code>TreeNode</code> with <code>info/left/right</code>, helper functions outside the class plus a thin member function that passes <code>root</code>).</div>
+
+<h2>Part A &mdash; Definitions and Short Answers</h2>
+
+<div class="qa"><div class="qq">A1. What motivated the introduction of the binary search tree?</div>
+<div class="aa">A sorted list gives fast retrieval, <code>O(logN)</code>, but slow insertion, <code>O(N)</code>; an unsorted list gives fast insertion, <code>O(1)</code>, but slow retrieval, <code>O(N)</code>. The BST is introduced to improve <code>InsertItem</code> without giving up fast retrieval &mdash; it aims at <code>O(logN)</code> for both.</div></div>
+
+<div class="qa"><div class="qq">A2. Define a <i>tree</i>.</div>
+<div class="aa">A collection of nodes linked to each other (similar to linked lists) in which each node can have 0 or more children (successor nodes), and each node except the root has exactly one parent (predecessor node). Consequently there is exactly one path from the root to any other node.</div></div>
+
+<div class="qa"><div class="qq">A3. Define root, leaf and interior node.</div>
+<div class="aa"><b>Root</b> &rArr; the node with no parent. <b>Leaf</b> &rArr; a node with no child. <b>Interior</b> &rArr; any non-leaf node.</div></div>
+
+<div class="qa"><div class="qq">A4. Define <i>level</i> and <i>height</i> of a tree.</div>
+<div class="aa"><b>Level</b> of a node = the number of ancestors (parent, parent&rsquo;s parent, ...) up to the root, i.e. its distance from the root; the root is at level 0. <b>Height</b> of the tree = the number of levels. (Some books instead define height as the highest level in the tree.)</div></div>
+
+<div class="qa"><div class="qq">A5. Define a <i>binary tree</i>.</div>
+<div class="aa">A tree with 0&ndash;2 children per node: no child, one left child, one right child, or one left and one right child. Every node is the parent of two smaller trees called the left subtree and the right subtree.</div></div>
+
+<div class="qa"><div class="qq">A6. Define a <i>full</i> binary tree.</div>
+<div class="aa">A binary tree is full if each node is either a leaf or possesses exactly two child nodes.</div></div>
+
+<div class="qa"><div class="qq">A7. Define a <i>complete</i> binary tree.</div>
+<div class="aa">A binary tree is complete if all levels (except possibly the last) are completely full, and the last level has all its nodes to the left side.</div></div>
+
+<div class="qa"><div class="qq">A8. Are "full" and "complete" the same thing? Justify with the four possibilities.</div>
+<div class="aa">No. All four combinations exist and were shown in the lecture: neither full nor complete; full but not complete; not full but complete; and full and complete. Neither property implies the other.</div></div>
+
+<div class="qa"><div class="qq">A9. State the key property of a binary search tree.</div>
+<div class="aa">The value at any node is larger than the value of its left child &mdash; hence larger than all values in its left subtree &mdash; and smaller than or equal to the value of its right child &mdash; hence smaller than all values in its right subtree.</div></div>
+
+<div class="qa"><div class="qq">A10. Write the <b>Structure</b> clause of the BST specification.</div>
+<div class="aa">"The placement of each element in the binary tree must satisfy the binary search property: the value of the key of an element is greater than the value of the key of any element in its left subtree, and less than the value of the key of any element in its right subtree."</div></div>
+
+<div class="qa"><div class="qq">A11. Define a <i>priority queue</i>.</div>
+<div class="aa">A structure in which items can be added and deleted like a queue, but which does not necessarily maintain First In First Out order: items can be added in any order, and the item with the highest priority is always the one deleted.</div></div>
+
+<div class="qa"><div class="qq">A12. Write the <b>Structure</b> clause of the priority queue specification.</div>
+<div class="aa">"The priority queue is arranged to support access to the highest-priority item."</div></div>
+
+<div class="qa"><div class="qq">A13. Define a <i>heap</i>, naming both of its properties.</div>
+<div class="aa">A heap is a complete binary tree (the <b>shape property</b>) in which each element contains a value that is less than or equal to the value of each of its children (min-heap) or greater than or equal to the value of each of its children (max-heap) &mdash; the <b>order property</b>.</div></div>
+
+<div class="qa"><div class="qq">A14. Distinguish min-heap from max-heap.</div>
+<div class="aa">Min-heap: every element &le; each of its children, so the smallest value is at the root. Max-heap: every element &ge; each of its children, so the largest value is at the root.</div></div>
+
+<div class="qa"><div class="qq">A15. Two facts follow from the heap definition. State them.</div>
+<div class="aa">(i) The shape of all heaps with a given number of elements is the same. (ii) The root node always contains the largest value in the heap (max-heap), and in addition every subtree of a heap is itself a heap.</div></div>
+
+<div class="qa"><div class="qq">A16. Define ReheapUp and ReheapDown.</div>
+<div class="aa"><b>ReheapDown</b>: when the order property is violated by the root node only (all other nodes are in place), move that element down from the root position until it reaches a position where the order property is satisfied. <b>ReheapUp</b>: when the order property is violated by the last leaf node only, move that element up in the tree until it ends up in its correct position.</div></div>
+
+<div class="qa"><div class="qq">A17. Define inorder, postorder and preorder traversal.</div>
+<div class="aa"><b>Inorder</b>: visit the nodes in the left subtree of a node, then visit the node, then visit the nodes in its right subtree. <b>Postorder</b>: visit the left subtree, then the right subtree, then the node. <b>Preorder</b>: visit the node, then the left subtree, then the right subtree.</div></div>
+
+<div class="qa"><div class="qq">A18. What does <code>IsFull()</code> mean for a linked BST? Why is it not about the shape of the tree?</div>
+<div class="aa">It reports whether more memory is available, not whether the tree is "full" in the shape sense. It attempts <code>location = new TreeNode;</code>. If the allocation succeeds the node is deleted and <code>false</code> is returned; if <code>std::bad_alloc</code> is thrown, the heap memory is exhausted and <code>true</code> is returned.</div></div>
+
+<div class="qa"><div class="qq">A19. What is <code>OrderType</code> and where is it used?</div>
+<div class="aa"><code>enum OrderType {PRE_ORDER, IN_ORDER, POST_ORDER};</code> &mdash; it is the parameter type of <code>ResetTree(OrderType order)</code> and <code>GetNextItem(ItemType&amp; item, OrderType order, bool&amp; finished)</code>, selecting which traversal the iteration follows.</div></div>
+
+<div class="qa"><div class="qq">A20. What are <code>FullPQ</code> and <code>EmptyPQ</code>?</div>
+<div class="aa">Two empty exception classes declared in <code>pqtype.h</code> as <code>class FullPQ{};</code> and <code>class EmptyPQ{};</code>. <code>Enqueue</code> throws <code>FullPQ()</code> when <code>length == maxItems</code>; <code>Dequeue</code> throws <code>EmptyPQ()</code> when <code>length == 0</code>.</div></div>
+
+<div class="qa"><div class="qq">A21. State the precondition and postcondition of <code>RetrieveItem</code>.</div>
+<div class="aa"><b>Pre:</b> key member of item is initialized. <b>Post:</b> if an element someItem has a key matching item&rsquo;s key then found = true and item is a copy of someItem; otherwise found = false and item is unchanged. The tree is unchanged in either case.</div></div>
+
+<div class="qa"><div class="qq">A22. State the precondition and postcondition of <code>InsertItem</code> and of <code>DeleteItem</code>.</div>
+<div class="aa"><b>InsertItem</b> &mdash; Pre: tree is not full, item is not in tree. Post: item is in tree, binary search property is maintained.<br>
+<b>DeleteItem</b> &mdash; Pre: key member of item is initialized; one and only one element in tree has a key matching item&rsquo;s key. Post: no element in tree has a key matching item&rsquo;s key.</div></div>
+
+<div class="qa"><div class="qq">A23. What are the postconditions of <code>ResetTree</code> and <code>GetNextItem</code>?</div>
+<div class="aa"><b>ResetTree</b>: current position is prior to the root of the tree. <b>GetNextItem</b>: current position is one position beyond the current position at entry; finished = (current position is last in tree); item is a copy of the element at the current position.</div></div>
+
+<div class="qa"><div class="qq">A24. Why is a heap <i>not</i> a binary search tree?</div>
+<div class="aa">A heap only orders each node against its own children; it says nothing about left versus right. Siblings and cousins may appear in any order, so an inorder traversal of a heap is not sorted, whereas an inorder traversal of a BST is.</div></div>
+
+<h2>Part B &mdash; Height, Node-Count and Shape Mathematics</h2>
+
+<div class="qa"><div class="qq">B1. How many nodes can there be at level <i>i</i> of a binary tree? Prove it informally.</div>
+<div class="aa">At most 2<sup>i</sup>, for i = 0, 1, 2, ... Level 0 holds only the root (2<sup>0</sup> = 1); every node contributes at most 2 children to the next level, so the bound doubles at each level: &le; 2<sup>0</sup>, &le; 2<sup>1</sup>, &le; 2<sup>2</sup>, ...</div></div>
+
+<div class="qa"><div class="qq">B2. Derive the maximum number of nodes in a binary tree of height <i>h</i>.</div>
+<div class="aa">The levels are 0, 1, 2, ..., (h&minus;1), so
+<pre>N = 2^0 + 2^1 + 2^2 + ... + 2^(h-1)
+  = (2^((h-1)+1) - 1) / (2 - 1)
+  = 2^h - 1</pre></div></div>
+
+<div class="qa"><div class="qq">B3. Given N nodes, derive the height, and state the minimum and maximum heights.</div>
+<div class="aa">From N = 2<sup>h</sup> &minus; 1 we get h = log<sub>2</sub>(N + 1). The <b>minimum</b> height is ceil(log<sub>2</sub>(N + 1)), attained when the tree is complete (best case). The <b>maximum</b> height is N, attained when every node has exactly one child (worst case, a skewed chain).</div></div>
+
+<div class="qa"><div class="qq">B4. For N = 10 nodes, compute the minimum and maximum height and describe the two shapes.</div>
+<div class="aa">Minimum height = log(10 + 1) = 3.46 ~ 4, which happens when the tree is complete. Maximum height = 10, which happens when each node has exactly one child, producing a single downward chain.</div></div>
+
+<div class="qa"><div class="qq">B5. A binary tree has height 4. What is the largest number of nodes it can contain, and the largest number of nodes at its last level?</div>
+<div class="aa">Largest total = 2<sup>4</sup> &minus; 1 = 15. Last level is level 3, so at most 2<sup>3</sup> = 8 nodes.</div></div>
+
+<div class="qa"><div class="qq">B6. Why does BST search degrade to O(N)?</div>
+<div class="aa">Because search cost is proportional to the height. If items arrive already sorted, each new item goes to the same side every time and the tree becomes a chain of height N, so the search walks N nodes just like a linked list.</div></div>
+
+<div class="qa"><div class="qq">B7. Explain the "impact of order of insertion on tree height" using the three inputs from the lecture.</div>
+<div class="aa">The same seven letters give three different trees. Input D B F A C E G gives a short, well-balanced tree (D at the root, B and F as children). Input B A D C G F E gives a taller, lopsided tree. Input A B C D E F G, already sorted, degenerates into a single chain A&rarr;B&rarr;C&rarr;D&rarr;E&rarr;F&rarr;G. The set of keys is identical; only the insertion order differs, and it decides the height and therefore the performance.</div></div>
+
+<div class="qa"><div class="qq">B8. Why can a heap always guarantee O(logN) while a BST cannot?</div>
+<div class="aa">The heap enforces the shape property: it is always a complete binary tree, so its height is always about log<sub>2</sub>N and ReheapUp/ReheapDown can never walk more than that. A BST has no shape constraint, so insertion order can make its height as large as N.</div></div>
+
+<h2>Part C &mdash; Explain the Logic of a Function</h2>
+
+<div class="qa"><div class="qq">C1. Explain the logic of the recursive <code>Insert</code> function, naming its base case and its two general cases.</div>
+<div class="aa"><b>Base case</b> &mdash; <code>tree == NULL</code>: the insertion place has been found, so a node is allocated, its two links are set to NULL, and <code>info</code> is set to the item. <b>General case 1</b> &mdash; <code>item &lt; tree-&gt;info</code>: the item belongs in the left subtree, so recurse on <code>tree-&gt;left</code>. <b>General case 2</b> &mdash; otherwise: recurse on <code>tree-&gt;right</code>. Each recursive call shrinks the problem to one subtree, so the recursion terminates at an empty subtree, which is exactly where a new leaf must be attached.</div></div>
+
+<div class="qa"><div class="qq">C2. Why is the first parameter of <code>Insert</code> declared <code>TreeNode *&amp;tree</code> and not <code>TreeNode *tree</code>?</div>
+<div class="aa">Because the base case executes <code>tree = new TreeNode;</code>. If the pointer were passed by value, the function would modify only its local copy and the new node would never be attached to the parent&rsquo;s <code>left</code>/<code>right</code> link (or to <code>root</code>), so the tree would not change and the memory would leak. Passing a reference to the pointer makes that assignment write directly into the caller&rsquo;s link field. The lecture demonstrates the difference with <code>void f(int *addr)</code> (y unchanged) versus <code>void f(int *&amp;addr)</code> (y changed).</div></div>
+
+<div class="qa"><div class="qq">C3. Explain the logic of <code>CountNodes</code>.</div>
+<div class="aa">The number of nodes is computed recursively. Base case: an empty tree has length 0. General case: the length equals the number of nodes in the left subtree plus the number of nodes in the right subtree plus 1 for the current node. The recursion therefore folds the answer up from the leaves; the root receives the total.</div></div>
+
+<div class="qa"><div class="qq">C4. Explain the logic of <code>Retrieve</code>, naming its two base cases and two general cases.</div>
+<div class="aa"><b>Base case 1</b> &mdash; the tree is empty: the item is not in the tree, so <code>found = false</code>. <b>Base case 2</b> &mdash; item equals the current node&rsquo;s info: the item is found, so <code>item = tree-&gt;info; found = true;</code>. <b>General case 1</b> &mdash; item &lt; current info: search the left subtree. <b>General case 2</b> &mdash; item &gt; current info: search the right subtree. The binary search property guarantees that only one side ever has to be searched, which is what makes the search logarithmic on a balanced tree.</div></div>
+
+<div class="qa"><div class="qq">C5. Explain the logic of <code>PrintTree</code> and say why the output is sorted.</div>
+<div class="aa">Base case: if the tree is empty there is nothing to print. General case: print the items in the left subtree, then print the item at the current node, then print the items in the right subtree. Because a BST keeps all smaller keys on the left and all larger keys on the right, this left-node-right order (inorder) emits keys in ascending order.</div></div>
+
+<div class="qa"><div class="qq">C6. Explain the three deletion cases of a BST node.</div>
+<div class="aa"><b>Leaf node</b>: simply detach it &mdash; set the parent&rsquo;s link (i.e. <code>tree</code>) to NULL and free the node. <b>Node with one child</b>: bypass it &mdash; set <code>tree</code> to that single child, then free the old node, so the child is adopted by the grandparent. <b>Node with two children</b>: it cannot simply be removed without breaking the structure, so replace its value with its predecessor &mdash; the rightmost node of its left subtree &mdash; and then recursively delete that predecessor from the left subtree. The predecessor is the largest key still smaller than everything in the right subtree, so the binary search property is preserved.</div></div>
+
+<div class="qa"><div class="qq">C7. Explain the logic of <code>GetPredecessor</code>.</div>
+<div class="aa">It is called on the <i>left subtree</i> of the node being deleted. Since the largest value of a subtree is at its rightmost position, the function simply walks right as far as it can &mdash; <code>while (tree-&gt;right != NULL) tree = tree-&gt;right;</code> &mdash; and copies the value it lands on into <code>data</code>. Note the parameter is a plain <code>TreeNode*</code> because the tree is only read, while <code>data</code> is a reference because it is the output.</div></div>
+
+<div class="qa"><div class="qq">C8. Explain the logic of the recursive <code>Delete</code> function.</div>
+<div class="aa">It is a search that ends in a removal. If <code>item &lt; tree-&gt;info</code> the target must be in the left subtree, so recurse there; if <code>item &gt; tree-&gt;info</code> recurse on the right subtree; otherwise the current node <i>is</i> the target and <code>DeleteNode(tree)</code> is called to perform the actual removal. Because <code>tree</code> is a reference to a pointer, <code>DeleteNode</code> can rewrite the parent&rsquo;s link.</div></div>
+
+<div class="qa"><div class="qq">C9. Explain the logic of <code>ReheapUp(root, bottom)</code>.</div>
+<div class="aa">The element sitting at index <code>bottom</code> may be too large for its position. While <code>bottom &gt; root</code>, compute its parent as <code>(bottom-1)/2</code>. If the parent is smaller than the child, the order property is violated, so swap them and repeat the process from the parent&rsquo;s position by calling <code>ReheapUp(root, parent)</code>. If the parent is not smaller, the element is already in its correct position and the recursion stops.</div></div>
+
+<div class="qa"><div class="qq">C10. Explain the logic of <code>ReheapDown(root, bottom)</code>.</div>
+<div class="aa">Compute <code>leftChild = root*2+1</code> and <code>rightChild = root*2+2</code>. If <code>leftChild &gt; bottom</code> the node is a leaf and there is nothing to do. If <code>leftChild == bottom</code> it is the only child, so it is the <code>maxChild</code>. Otherwise both children exist and <code>maxChild</code> is the larger of the two. If <code>elements[root] &lt; elements[maxChild]</code> the order property is violated, so swap the root with maxChild and continue sinking with <code>ReheapDown(maxChild, bottom)</code>. Swapping with the <i>larger</i> child is essential: swapping with the smaller one would leave the new parent below one of its children.</div></div>
+
+<div class="qa"><div class="qq">C11. Explain the logic of <code>Enqueue</code> in the heap-based priority queue.</div>
+<div class="aa">If <code>length == maxItems</code> the queue is full and <code>FullPQ()</code> is thrown. Otherwise <code>length</code> is incremented and the new item is written to <code>items.elements[length-1]</code>, which is exactly the next free position &mdash; the last leaf of the complete tree. Placing it there keeps the shape property but may break the order property at that one leaf, which is precisely the situation ReheapUp is designed for, so <code>items.ReheapUp(0, length-1)</code> is called to float the item up to its correct place.</div></div>
+
+<div class="qa"><div class="qq">C12. Explain the logic of <code>Dequeue</code>.</div>
+<div class="aa">If <code>length == 0</code>, <code>EmptyPQ()</code> is thrown. Otherwise the root, <code>items.elements[0]</code>, holds the highest-priority item, so it is copied into <code>item</code>. The last leaf, <code>items.elements[length-1]</code>, is then moved into the root position; this preserves the complete shape but may break the order property at the root only, which is what ReheapDown fixes. <code>length</code> is decremented so the old last slot leaves the tree, and <code>items.ReheapDown(0, length-1)</code> sinks the new root into place.</div></div>
+
+<div class="qa"><div class="qq">C13. Why must the decrement of <code>length</code> happen <i>before</i> ReheapDown in Dequeue?</div>
+<div class="aa">The value that used to sit in the last slot has already been copied to the root; that slot is no longer part of the heap. If <code>bottom</code> still included it, ReheapDown could compare against or swap into a stale element that is logically outside the heap and could pull a removed value back in.</div></div>
+
+<div class="qa"><div class="qq">C14. Why does <code>Retrieve</code> take <code>TreeNode* tree</code> while <code>Insert</code> and <code>Delete</code> take <code>TreeNode*&amp; tree</code>?</div>
+<div class="aa">Retrieve never changes the structure of the tree &mdash; it only reads <code>info</code> and follows links &mdash; so a copy of the pointer is sufficient. Insert and Delete both rewrite a link in the parent (attaching a new node, or bypassing / removing an existing one), so they need a reference to the caller&rsquo;s pointer.</div></div>
+
+<div class="qa"><div class="qq">C15. Explain how the traversal iterator (<code>ResetTree</code> + <code>GetNextItem</code>) works.</div>
+<div class="aa">The class stores three queues, <code>QueType preQue, inQue, postQue</code>. <code>ResetTree(order)</code> switches on the order and runs the corresponding recursive traversal (<code>PreOrder</code>, <code>InOrder</code> or <code>PostOrder</code>), which does not print anything but enqueues each visited <code>info</code> into the matching queue. The whole traversal is therefore precomputed. <code>GetNextItem(order, finished)</code> then simply dequeues one item from that queue, and sets <code>finished = true</code> when the queue has become empty, so the caller knows the iteration is over.</div></div>
+
+<div class="qa"><div class="qq">C16. In the three traversal functions, only the position of one statement changes. Explain.</div>
+<div class="aa">All three recurse on <code>tree-&gt;left</code> and <code>tree-&gt;right</code> under <code>if (tree != NULL)</code>. The single <code>Enqueue(tree-&gt;info)</code> statement moves: <b>before</b> both calls gives preorder, <b>between</b> them gives inorder, and <b>after</b> both gives postorder. That one line's position is the entire difference between the three traversals.</div></div>
+
+<h2>Part D &mdash; Time Complexity</h2>
+
+<div class="qa"><div class="qq">D1. Complete the sorted vs unsorted list table given at the start of Lecture 11.</div>
+<div class="plain"><table class="t"><tr><th></th><th>Unsorted List</th><th>Sorted List</th></tr>
+<tr><td><code>RetrieveItem</code></td><td>O(N)</td><td>O(logN)</td></tr>
+<tr><td><code>InsertItem</code></td><td>O(1)</td><td>O(N)</td></tr></table></div></div>
+
+<div class="qa"><div class="qq">D2. Give the complexity of <code>TreeType()</code>, <code>IsEmpty()</code> and <code>IsFull()</code>, with reasons.</div>
+<div class="aa">All three are <b>O(1)</b>. The constructor is a single assignment <code>root = NULL;</code>; <code>IsEmpty</code> is one pointer comparison; <code>IsFull</code> performs one allocation attempt and one deallocation, independent of how many nodes the tree holds.</div></div>
+
+<div class="qa"><div class="qq">D3. Give the worst, best and average complexity of <code>InsertItem</code>, and say when each occurs.</div>
+<div class="aa">Worst <b>O(N)</b> &mdash; a skewed tree, where insertion walks the whole chain. Best <b>O(1)</b> &mdash; the insertion place is found immediately (e.g. an empty tree). Average <b>O(lgN)</b> &mdash; a reasonably balanced tree, where the path length is the height.</div></div>
+
+<div class="qa"><div class="qq">D4. Give the worst, best and average complexity of <code>RetrieveItem</code>, and say when each occurs.</div>
+<div class="aa">Worst <b>O(N)</b> &mdash; skewed tree, target at the far end (or absent). Best <b>O(1)</b> &mdash; the target is at the root. Average <b>O(logN)</b> &mdash; the search follows one root-to-node path whose length is the height.</div></div>
+
+<div class="qa"><div class="qq">D5. What is the complexity of <code>LengthIs</code> and why is it not O(logN)?</div>
+<div class="aa"><b>O(N)</b>. Counting cannot use the search property to discard a subtree &mdash; every node has to be visited and counted, so both subtrees are always entered.</div></div>
+
+<div class="qa"><div class="qq">D6. What is the complexity of <code>Print</code>? Why?</div>
+<div class="aa"><b>O(N)</b> &mdash; the traversal must reach every node exactly once to print it.</div></div>
+
+<div class="qa"><div class="qq">D7. Give the complexity of ReheapUp, ReheapDown and Swap, with reasons.</div>
+<div class="aa"><code>Swap</code> is <b>O(1)</b> &mdash; three assignments. <code>ReheapUp</code> and <code>ReheapDown</code> are <b>O(logN)</b> &mdash; each recursive step climbs or sinks exactly one level, and since a heap is a complete binary tree its height is about log<sub>2</sub>N.</div></div>
+
+<div class="qa"><div class="qq">D8. Give the complexity of every <code>PQType</code> operation.</div>
+<div class="plain"><table class="t"><tr><th>Operation</th><th>Complexity</th><th>Reason</th></tr>
+<tr><td><code>PQType(int max)</code></td><td>O(1)</td><td>3 assignments plus one array allocation</td></tr>
+<tr><td><code>~PQType()</code></td><td>O(1)</td><td>one <code>delete []</code></td></tr>
+<tr><td><code>MakeEmpty()</code></td><td>O(1)</td><td><code>length = 0;</code></td></tr>
+<tr><td><code>IsFull()</code></td><td>O(1)</td><td>one comparison</td></tr>
+<tr><td><code>IsEmpty()</code></td><td>O(1)</td><td>one comparison</td></tr>
+<tr><td><code>Enqueue()</code></td><td>O(logN)</td><td>dominated by ReheapUp</td></tr>
+<tr><td><code>Dequeue()</code></td><td>O(logN)</td><td>dominated by ReheapDown</td></tr></table></div></div>
+
+<div class="qa"><div class="qq">D9. Summarise the complexity of every BST operation covered in the two lectures.</div>
+<div class="plain"><table class="t"><tr><th>Operation</th><th>Best</th><th>Average</th><th>Worst</th></tr>
+<tr><td><code>TreeType()</code> / <code>IsEmpty</code> / <code>IsFull</code></td><td>O(1)</td><td>O(1)</td><td>O(1)</td></tr>
+<tr><td><code>InsertItem</code></td><td>O(1)</td><td>O(lgN)</td><td>O(N)</td></tr>
+<tr><td><code>RetrieveItem</code></td><td>O(1)</td><td>O(logN)</td><td>O(N)</td></tr>
+<tr><td><code>LengthIs</code></td><td>O(N)</td><td>O(N)</td><td>O(N)</td></tr>
+<tr><td><code>Print</code></td><td>O(N)</td><td>O(N)</td><td>O(N)</td></tr></table></div></div>
+
+<div class="qa"><div class="qq">D10. A priority queue is implemented (i) as an unsorted list and (ii) as a heap. Compare Dequeue.</div>
+<div class="aa">With an unsorted list the highest-priority item must be located by scanning, which is O(N). With the heap it is already at index 0, so removing it costs only the ReheapDown that follows, i.e. O(logN). This is exactly why the lecture implements the priority queue on top of a heap.</div></div>
+
+<h2>Part E &mdash; Dry Runs and Diagrams</h2>
+
+<div class="qa"><div class="qq">E1. Insert 5, 9, 7, 3, 8, 12, 6, 4, 20 into an empty BST in that order. Describe the resulting tree.</div>
+<div class="aa">Root 5. Left subtree: 3, whose right child is 4. Right subtree: 9, whose left child is 7 and right child is 12; 7 has children 6 and 8; 12 has right child 20.
+<pre>            5
+          /   \
+         3     9
+          \   /  \
+           4 7    12
+            / \     \
+           6   8     20</pre></div></div>
+
+<div class="qa"><div class="qq">E2. For the tree of E1, give the output of <code>Print()</code> and of <code>LengthIs()</code>.</div>
+<div class="aa"><code>Print()</code> &rarr; 3 4 5 6 7 8 9 12 20. <code>LengthIs()</code> &rarr; 9.</div></div>
+
+<div class="qa"><div class="qq">E3. Trace <code>InsertItem(7)</code> into the tree {5 (root), 9 (right child)}. List the calls and the case used by each.</div>
+<div class="aa"><code>InsertItem(7)</code> &rarr; <code>Insert(root, 7)</code>: 7 &gt; 5 &rArr; <b>General case 2</b> &rarr; <code>Insert(root-&gt;right, 7)</code>: 7 &lt; 9 &rArr; <b>General case 1</b> &rarr; <code>Insert(root-&gt;right-&gt;left, 7)</code>: pointer is NULL &rArr; <b>Base case</b>, so a new node holding 7 is created and attached as the left child of 9.</div></div>
+
+<div class="qa"><div class="qq">E4. Trace <code>RetrieveItem</code> searching for 8 in the tree of E1.</div>
+<div class="aa">At 5: 8 &gt; 5 &rArr; general case 2, go right. At 9: 8 &lt; 9 &rArr; general case 1, go left. At 7: 8 &gt; 7 &rArr; general case 2, go right. At 8: match &rArr; base case 2, <code>item = 8; found = true;</code></div></div>
+
+<div class="qa"><div class="qq">E5. Trace <code>RetrieveItem</code> searching for 10 in the tree of E1.</div>
+<div class="aa">At 5: 10 &gt; 5 &rArr; right. At 9: 10 &gt; 9 &rArr; right. At 12: 10 &lt; 12 &rArr; left. That link is NULL &rArr; base case 1, so <code>found = false</code> and item is unchanged.</div></div>
+
+<div class="qa"><div class="qq">E6. Trace <code>CountNodes</code> on the tree of E1 (report the value returned by each subtree).</div>
+<div class="aa">Leaves 4, 6, 8, 20 each return 1 (0 + 0 + 1). Node 3 returns 0 + 1 + 1 = 2. Node 7 returns 1 + 1 + 1 = 3. Node 12 returns 0 + 1 + 1 = 2. Node 9 returns 3 + 2 + 1 = 6. Root 5 returns 2 + 6 + 1 = <b>9</b>.</div></div>
+
+<div class="qa"><div class="qq">E7. For the tree rooted at 9 with left child 3 (right child 4) and right child 16 (children 10 and 18; 10 has right child 14; 14 has left child 13; 13 has left child 12; 18 has right child 20), give the inorder, postorder and preorder traversals.</div>
+<div class="aa"><b>Inorder:</b> 3 4 9 10 12 13 14 16 18 20<br>
+<b>Postorder:</b> 4 3 12 13 14 10 20 18 16 9<br>
+<b>Preorder:</b> 9 3 4 16 10 14 13 12 18 20</div></div>
+
+<div class="qa"><div class="qq">E8. In the tree of E7, delete 20, then 18, then 9, then 16. Explain each case.</div>
+<div class="aa"><b>Delete 20</b> &mdash; leaf: 18&rsquo;s right link is set to NULL and the node is freed.<br>
+<b>Delete 18</b> &mdash; one child (20): 16&rsquo;s right link is redirected to 20, then the node holding 18 is freed.<br>
+<b>Delete 9</b> &mdash; two children: its predecessor is the rightmost node of its left subtree, i.e. 4, so the root becomes 4 and 4 is then deleted from the left subtree.<br>
+<b>Delete 16</b> &mdash; two children: the rightmost node of 16&rsquo;s left subtree (10 &rarr; 14) is 14, so 16 is replaced by 14 and the old 14 is deleted from that subtree (it has one child 13, which is bypassed).</div></div>
+
+<div class="qa"><div class="qq">E9. Write the array representation of the heap 11, 9, 4, 7, 8, 3, 1, 2, 5, 6 and identify the children of index 1 and the parent of index 6.</div>
+<div class="aa"><table class="t"><tr><th>Index</th><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td></tr>
+<tr><th>Value</th><td>11</td><td>9</td><td>4</td><td>7</td><td>8</td><td>3</td><td>1</td><td>2</td><td>5</td><td>6</td></tr></table>
+Children of index 1 are 2(1)+1 = 3 and 2(1)+2 = 4, i.e. 7 and 8. Parent of index 6 is (6&minus;1)/2 = 2, i.e. the value 4.</div></div>
+
+<div class="qa"><div class="qq">E10. Trace <code>Enqueue(15)</code> on the heap of E9.</div>
+<div class="aa">length becomes 11, so 15 is written at index length&minus;1 = 10, as the last leaf. ReheapUp: parent of 10 is (10&minus;1)/2 = 4 holding 8; 8 &lt; 15 so swap &mdash; 15 moves to index 4. Parent of 4 is 1 holding 9; 9 &lt; 15 so swap &mdash; 15 moves to index 1. Parent of 1 is 0 holding 11; 11 &lt; 15 so swap &mdash; 15 becomes the root. Final array: 15 11 4 7 9 3 1 2 5 6 8.</div></div>
+
+<div class="qa"><div class="qq">E11. Trace <code>Dequeue</code> on the heap of E9.</div>
+<div class="aa"><code>item = elements[0] = 11</code>, the highest-priority value, is returned. The last leaf 6 (index 9) is copied to index 0 and <code>length</code> drops from 10 to 9. ReheapDown(0, 8): children of 0 are 9 and 4, maxChild = 9; 6 &lt; 9 so swap &mdash; 6 moves to index 1. Children of 1 are 7 and 8, maxChild = 8; 6 &lt; 8 so swap &mdash; 6 moves to index 4. Index 4 has no child within bound 8, so it stops. Final array: 9 8 4 7 6 3 1 2 5.</div></div>
+
+<div class="qa"><div class="qq">E12. ReheapDown is applied to the max-heap whose root is 6 and whose remaining nodes are 11, 4 / 7, 9, 3, 1 / 2, 5, 8. Trace it.</div>
+<div class="aa">Root 6 vs children 11 and 4: maxChild = 11, and 6 &lt; 11, so swap &mdash; 11 becomes the root and 6 sinks to 11&rsquo;s old place. Its children are now 7 and 9: maxChild = 9, and 6 &lt; 9, so swap. 6 now sits above 8: maxChild = 8, and 6 &lt; 8, so swap. 6 is now a leaf and the heap is restored: 11; 9, 4; 7, 8, 3, 1; 2, 5, 6.</div></div>
+
+<div class="qa"><div class="qq">E13. ReheapUp is applied because the last leaf of the max-heap 9; 8, 4; 7, 6, 3, 1; 2, 5, 11 is 11. Trace it.</div>
+<div class="aa">11 is at index 9; parent (9&minus;1)/2 = 4 holds 6, and 6 &lt; 11, so swap. 11 is now at index 4; parent (4&minus;1)/2 = 1 holds 8, and 8 &lt; 11, so swap. 11 is now at index 1; parent 0 holds 9, and 9 &lt; 11, so swap. 11 becomes the root: 11; 9, 4; 7, 8, 3, 1; 2, 5, 6.</div></div>
+
+<div class="qa"><div class="qq">E14. Draw a binary tree that is (i) full but not complete and (ii) complete but not full.</div>
+<div class="aa">(i) Full but not complete &mdash; every node has 0 or 2 children, but level 2 is not filled left-to-right:
+<pre>      A
+     / \
+    B   C
+       / \
+      D   E
+     / \
+    F   G</pre>
+(ii) Complete but not full &mdash; levels fill left to right, but node C has only one child:
+<pre>      A
+     / \
+    B   C
+   / \  /
+  D  E F</pre></div></div>
+
+<div class="qa"><div class="qq">E15. Given the preorder 9 3 4 16 10 14 13 12 18 20 and the inorder 3 4 9 10 12 13 14 16 18 20, identify the root and its two subtrees.</div>
+<div class="aa">The first element of the preorder, 9, is the root. In the inorder it splits the sequence: everything before it, 3 4, is the left subtree, and everything after it, 10 12 13 14 16 18 20, is the right subtree. (Applying the same rule recursively rebuilds the whole tree.)</div></div>
+
+<h2>Part F &mdash; Write the Code (exactly as developed in the lectures)</h2>
+
+<div class="qa"><div class="qq">F1. Write the <code>TreeNode</code> structure used for a binary search tree.</div>
+<div class="aa"><pre>struct TreeNode
+{
+  ItemType info;
+  TreeNode *left;
+  TreeNode *right;
+};</pre>A node is drawn as three fields: <code>left | info | right</code>.</div></div>
+
+<div class="qa"><div class="qq">F2. Write <code>binarysearchtree.h</code>.</div>
+<div class="aa"><pre>#ifndef BINARYSEARCHTREE_H_INCLUDED
+#define BINARYSEARCHTREE_H_INCLUDED
+typedef char ItemType;
+struct TreeNode{ItemType info; TreeNode *left, *right;};
+enum OrderType {PRE_ORDER, IN_ORDER, POST_ORDER};
+class TreeType
+{
+public:
+  TreeType();
+  ~TreeType();
+  void MakeEmpty();
+  bool IsEmpty();
+  bool IsFull();
+  int  LengthIs();
+  void RetrieveItem(ItemType&amp; item, bool&amp; found);
+  void InsertItem(ItemType item);
+  void DeleteItem(ItemType item);
+  void ResetTree(OrderType order);
+  void GetNextItem(ItemType&amp; item, OrderType order, bool&amp; finished);
+  void Print();
+private:
+  TreeNode* root;
+};
+#endif // BINARYSEARCHTREE_H_INCLUDED</pre></div></div>
+
+<div class="qa"><div class="qq">F3. Write the constructor and <code>IsEmpty</code>.</div>
+<div class="aa"><pre>TreeType::TreeType()
+{
+  root = NULL;                 // O(1)
+}
+
+bool TreeType::IsEmpty()
+{
+  return root == NULL;         // O(1)
+}</pre></div></div>
+
+<div class="qa"><div class="qq">F4. Write <code>IsFull</code> for the linked BST.</div>
+<div class="aa"><pre>bool TreeType::IsFull()
+{
+  TreeNode* location;
+  try
+  {
+    location = new TreeNode;
+    delete location;
+    return false;
+  }
+  catch(std::bad_alloc exception)
+  {
+    return true;
+  }
+}                              // O(1)</pre>Requires <code>#include &lt;new&gt;</code>.</div></div>
+
+<div class="qa"><div class="qq">F5. Write <code>InsertItem</code> together with its recursive helper.</div>
+<div class="aa"><pre>void Insert(TreeNode *&amp;tree, ItemType item)
+{
+  if (tree == NULL)            // Base case: insertion place found
+  {
+    tree = new TreeNode;
+    tree-&gt;right = NULL;
+    tree-&gt;left  = NULL;
+    tree-&gt;info  = item;
+  }
+  else if (item &lt; tree-&gt;info)
+    Insert(tree-&gt;left, item);  // General case 1: insert in left subtree
+  else
+    Insert(tree-&gt;right, item); // General case 2: insert in right subtree
+}
+
+void TreeType::InsertItem(ItemType item)
+{
+  Insert(root, item);
+}</pre>Worst O(N), best O(1), average O(lgN).</div></div>
+
+<div class="qa"><div class="qq">F6. Write <code>LengthIs</code> together with <code>CountNodes</code>.</div>
+<div class="aa"><pre>int CountNodes(TreeNode* tree)
+{
+  if (tree == NULL)
+    return 0;
+  else
+    return CountNodes(tree-&gt;left) + CountNodes(tree-&gt;right) + 1;
+}
+
+int TreeType::LengthIs()
+{
+  return CountNodes(root);
+}                              // O(N)</pre></div></div>
+
+<div class="qa"><div class="qq">F7. Write <code>RetrieveItem</code> together with <code>Retrieve</code>.</div>
+<div class="aa"><pre>void Retrieve(TreeNode* tree, ItemType&amp; item, bool&amp; found)
+{
+    if (tree == NULL)
+        found = false;
+    else if (item &lt; tree-&gt;info)
+        Retrieve(tree-&gt;left, item, found);
+    else if (item &gt; tree-&gt;info)
+        Retrieve(tree-&gt;right, item, found);
+    else
+    {
+        item  = tree-&gt;info;
+        found = true;
+    }
+}
+
+void TreeType::RetrieveItem(ItemType&amp; item, bool&amp; found)
+{
+    Retrieve(root, item, found);
+}</pre>Worst O(N), best O(1), average O(logN).</div></div>
+
+<div class="qa"><div class="qq">F8. Write <code>Print</code> together with <code>PrintTree</code>.</div>
+<div class="aa"><pre>void PrintTree(TreeNode* tree)
+{
+    if (tree != NULL)
+    {
+        PrintTree(tree-&gt;left);
+        cout &lt;&lt; tree-&gt;info &lt;&lt; endl;
+        PrintTree(tree-&gt;right);
+    }
+}
+
+void TreeType::Print()
+{
+    PrintTree(root);
+}                              // O(N)</pre></div></div>
+
+<div class="qa"><div class="qq">F9. Write <code>DeleteItem</code> and the recursive <code>Delete</code>.</div>
+<div class="aa"><pre>void DeleteNode(TreeNode*&amp; tree);
+void GetPredecessor(TreeNode* tree, ItemType&amp; data);
+
+void TreeType::DeleteItem(ItemType item)
+{
+    Delete(root, item);
+}
+
+void Delete(TreeNode*&amp; tree, ItemType item)
+{
+    if (item &lt; tree-&gt;info)
+        Delete(tree-&gt;left, item);
+    else if (item &gt; tree-&gt;info)
+        Delete(tree-&gt;right, item);
+    else
+        DeleteNode(tree);
+}</pre></div></div>
+
+<div class="qa"><div class="qq">F10. Write <code>DeleteNode</code>, covering all cases.</div>
+<div class="aa"><pre>void DeleteNode(TreeNode*&amp; tree)
+{
+    ItemType data;
+    TreeNode* tempPtr;
+
+    tempPtr = tree;
+    if (tree-&gt;left == NULL &amp;&amp; tree-&gt;right == NULL)   // leaf
+    {
+        tree = NULL;
+        delete tempPtr;
+    }
+    else if (tree-&gt;left == NULL)                     // only right child
+    {
+        tree = tree-&gt;right;
+        delete tempPtr;
+    }
+    else if (tree-&gt;right == NULL)                    // only left child
+    {
+        tree = tree-&gt;left;
+        delete tempPtr;
+    }
+    else                                            // two children
+    {
+        GetPredecessor(tree-&gt;left, data);
+        tree-&gt;info = data;
+        Delete(tree-&gt;left, data);
+    }
+}</pre></div></div>
+
+<div class="qa"><div class="qq">F11. Write <code>GetPredecessor</code>.</div>
+<div class="aa"><pre>void GetPredecessor(TreeNode* tree, ItemType&amp; data)
+{
+    while (tree-&gt;right != NULL)
+        tree = tree-&gt;right;
+    data = tree-&gt;info;
+}</pre>It is always called as <code>GetPredecessor(tree-&gt;left, data)</code>, so it returns the largest key of the left subtree.</div></div>
+
+<div class="qa"><div class="qq">F12. Write the three traversal helpers that fill the queues.</div>
+<div class="aa"><pre>void InOrder(TreeNode* tree, QueType&amp; inQue)
+{
+  if (tree != NULL)
+  {
+    InOrder(tree-&gt;left, inQue);
+    inQue.Enqueue(tree-&gt;info);
+    InOrder(tree-&gt;right, inQue);
+  }
+}
+void PostOrder(TreeNode* tree, QueType&amp; postQue)
+{
+  if (tree != NULL)
+  {
+    PostOrder(tree-&gt;left, postQue);
+    PostOrder(tree-&gt;right, postQue);
+    postQue.Enqueue(tree-&gt;info);
+  }
+}
+void PreOrder(TreeNode* tree, QueType&amp; preQue)
+{
+  if (tree != NULL)
+  {
+    preQue.Enqueue(tree-&gt;info);
+    PreOrder(tree-&gt;left, preQue);
+    PreOrder(tree-&gt;right, preQue);
+  }
+}</pre></div></div>
+
+<div class="qa"><div class="qq">F13. Write <code>ResetTree</code>.</div>
+<div class="aa"><pre>void TreeType::ResetTree(OrderType order)
+{
+  switch (order)
+  {
+    case PRE_ORDER : PreOrder(root, preQue);
+                     break;
+    case IN_ORDER  : InOrder(root, inQue);
+                     break;
+    case POST_ORDER: PostOrder(root, postQue);
+                     break;
+  }
+}</pre>The class holds <code>QueType preQue, inQue, postQue;</code> as private members alongside <code>TreeNode* root;</code>.</div></div>
+
+<div class="qa"><div class="qq">F14. Write <code>GetNextItem</code>.</div>
+<div class="aa"><pre>ItemType TreeType::GetNextItem(OrderType order, bool&amp; finished)
+{
+  finished = false;
+  ItemType item;
+  switch (order)
+  {
+    case PRE_ORDER  : preQue.Dequeue(item);
+                      if (preQue.IsEmpty())
+                        finished = true;
+                      break;
+    case IN_ORDER   : inQue.Dequeue(item);
+                      if (inQue.IsEmpty())
+                        finished = true;
+                      break;
+    case POST_ORDER : postQue.Dequeue(item);
+                      if (postQue.IsEmpty())
+                        finished = true;
+                      break;
+  }
+  return item;
+}</pre><b>Note on the slides:</b> the header (Lecture 11) declares <code>void GetNextItem(ItemType&amp; item, OrderType order, bool&amp; finished);</code> &mdash; returning the item through a reference parameter &mdash; while the implementation slide (Lecture 12) writes it as <code>ItemType GetNextItem(OrderType order, bool&amp; finished)</code>, returning the item. Both appear in the lectures; quote whichever form the question asks for, and keep the two consistent in your own code.</div></div>
+
+<div class="qa"><div class="qq">F15. Write the <code>HeapType</code> class declaration.</div>
+<div class="aa"><pre>template&lt;class ItemType&gt;
+class HeapType
+{
+  void ReheapDown(int root, int bottom);
+  void ReheapUp(int root, int bottom);
+  ItemType* elements;
+  int numElements;
+};</pre></div></div>
+
+<div class="qa"><div class="qq">F16. Write <code>Swap</code> and <code>ReheapUp</code>.</div>
+<div class="aa"><pre>template &lt;class ItemType&gt;
+void Swap(ItemType&amp; one, ItemType&amp; two)
+{
+  ItemType temp;
+  temp = one;
+  one  = two;
+  two  = temp;
+}                                       // O(1)
+
+template&lt;class ItemType&gt;
+void HeapType&lt;ItemType&gt;::ReheapUp(int root, int bottom)
+{
+  int parent;
+  if (bottom &gt; root)
+  {
+    parent = (bottom-1) / 2;
+    if (elements[parent] &lt; elements[bottom])
+    {
+      Swap(elements[parent], elements[bottom]);
+      ReheapUp(root, parent);
+    }
+  }
+}                                       // O(logN)</pre></div></div>
+
+<div class="qa"><div class="qq">F17. Write <code>ReheapDown</code>.</div>
+<div class="aa"><pre>template&lt;class ItemType&gt;
+void HeapType&lt;ItemType&gt;::ReheapDown(int root, int bottom)
+{
+  int maxChild, rightChild = root*2+2, leftChild = root*2+1;
+  if (leftChild &lt;= bottom)              // there is at least one child
+  {
+    if (leftChild == bottom)            // it is the only child
+      maxChild = leftChild;
+    else                                // there are two children
+    {
+      if (elements[leftChild] &lt;= elements[rightChild])
+        maxChild = rightChild;
+      else
+        maxChild = leftChild;
+    }
+    if (elements[root] &lt; elements[maxChild])
+    {
+      Swap(elements[root], elements[maxChild]);
+      ReheapDown(maxChild, bottom);
+    }
+  }
+}                                       // O(logN)</pre></div></div>
+
+<div class="qa"><div class="qq">F18. Write <code>pqtype.h</code>.</div>
+<div class="aa"><pre>#ifndef PQTYPE_H_INCLUDED
+#define PQTYPE_H_INCLUDED
+
+class FullPQ{};
+class EmptyPQ{};
+#include "heap.h"
+template&lt;class ItemType&gt;
+class PQType
+{
+public:
+  PQType(int);
+  ~PQType();
+  void MakeEmpty();
+  bool IsEmpty();
+  bool IsFull();
+  void Enqueue(ItemType newItem);
+  void Dequeue(ItemType&amp; item);
+private:
+  int length;
+  HeapType&lt;ItemType&gt; items;
+  int maxItems;
+};
+#endif // PQTYPE_H_INCLUDED</pre></div></div>
+
+<div class="qa"><div class="qq">F19. Write the PQType constructor, destructor and <code>MakeEmpty</code>.</div>
+<div class="aa"><pre>template&lt;class ItemType&gt;
+PQType&lt;ItemType&gt;::PQType(int max)
+{
+  maxItems = max;
+  items.elements = new ItemType[max];
+  length = 0;
+}                                       // O(1)
+
+template&lt;class ItemType&gt;
+PQType&lt;ItemType&gt;::~PQType()
+{
+  delete [] items.elements;
+}                                       // O(1)
+
+template&lt;class ItemType&gt;
+void PQType&lt;ItemType&gt;::MakeEmpty()
+{
+  length = 0;
+}                                       // O(1)</pre></div></div>
+
+<div class="qa"><div class="qq">F20. Write <code>IsFull</code> and <code>IsEmpty</code> for PQType.</div>
+<div class="aa"><pre>template&lt;class ItemType&gt;
+bool PQType&lt;ItemType&gt;::IsFull()
+{
+  return length == maxItems;            // O(1)
+}
+
+template&lt;class ItemType&gt;
+bool PQType&lt;ItemType&gt;::IsEmpty()
+{
+  return length == 0;                   // O(1)
+}</pre></div></div>
+
+<div class="qa"><div class="qq">F21. Write <code>Enqueue</code>.</div>
+<div class="aa"><pre>template&lt;class ItemType&gt;
+void PQType&lt;ItemType&gt;::Enqueue(ItemType newItem)
+{
+  if (length == maxItems)
+    throw FullPQ();
+  else
+  {
+    length++;
+    items.elements[length-1] = newItem;
+    items.ReheapUp(0, length-1);
+  }
+}                                       // O(logN)</pre></div></div>
+
+<div class="qa"><div class="qq">F22. Write <code>Dequeue</code>.</div>
+<div class="aa"><pre>template&lt;class ItemType&gt;
+void PQType&lt;ItemType&gt;::Dequeue(ItemType&amp; item)
+{
+  if (length == 0)
+    throw EmptyPQ();
+  else
+  {
+    item = items.elements[0];
+    items.elements[0] = items.elements[length-1];
+    length--;
+    items.ReheapDown(0, length-1);
+  }
+}                                       // O(logN)</pre></div></div>
+
+<h2>Part G &mdash; Condition-Based Coding (build on the slide functions)</h2>
+
+<div class="qa"><div class="qq">G1. Write a recursive function that returns the <b>height</b> of a binary tree (number of levels).</div>
+<div class="aa">Same shape as <code>CountNodes</code>, but take the maximum of the two sides instead of the sum:
+<pre>int Height(TreeNode* tree)
+{
+  if (tree == NULL)
+    return 0;
+  int l = Height(tree-&gt;left);
+  int r = Height(tree-&gt;right);
+  if (l &gt; r) return l + 1;
+  else       return r + 1;
+}</pre>O(N), since every node is visited.</div></div>
+
+<div class="qa"><div class="qq">G2. Write a function that counts the number of <b>leaf</b> nodes in a binary tree.</div>
+<div class="aa"><pre>int CountLeaves(TreeNode* tree)
+{
+  if (tree == NULL)
+    return 0;
+  else if (tree-&gt;left == NULL &amp;&amp; tree-&gt;right == NULL)
+    return 1;                       // definition of a leaf: no child
+  else
+    return CountLeaves(tree-&gt;left) + CountLeaves(tree-&gt;right);
+}</pre>O(N).</div></div>
+
+<div class="qa"><div class="qq">G3. Write a function that counts the <b>interior</b> (non-leaf) nodes of a binary tree.</div>
+<div class="aa"><pre>int CountInterior(TreeNode* tree)
+{
+  if (tree == NULL)
+    return 0;
+  if (tree-&gt;left == NULL &amp;&amp; tree-&gt;right == NULL)
+    return 0;                       // a leaf is not interior
+  return CountInterior(tree-&gt;left) + CountInterior(tree-&gt;right) + 1;
+}</pre>Equivalently <code>CountNodes(tree) - CountLeaves(tree)</code>.</div></div>
+
+<div class="qa"><div class="qq">G4. Write a function that returns the number of nodes having <b>exactly one</b> child.</div>
+<div class="aa"><pre>int CountSingleChild(TreeNode* tree)
+{
+  if (tree == NULL)
+    return 0;
+  int self = 0;
+  if ((tree-&gt;left == NULL) != (tree-&gt;right == NULL))
+    self = 1;                       // exactly one link is NULL
+  return self + CountSingleChild(tree-&gt;left)
+              + CountSingleChild(tree-&gt;right);
+}</pre></div></div>
+
+<div class="qa"><div class="qq">G5. Write a function that returns the <b>smallest</b> value stored in a BST, without traversing every node.</div>
+<div class="aa">By the binary search property every smaller key lies to the left, so walk left as far as possible &mdash; this is the mirror image of <code>GetPredecessor</code>:
+<pre>void GetSmallest(TreeNode* tree, ItemType&amp; data)
+{
+  while (tree-&gt;left != NULL)
+    tree = tree-&gt;left;
+  data = tree-&gt;info;
+}</pre>Precondition: the tree is not empty. Cost O(height), i.e. O(logN) average, O(N) worst.</div></div>
+
+<div class="qa"><div class="qq">G6. Write a function that returns the <b>largest</b> value stored in a BST.</div>
+<div class="aa">Walk right as far as possible &mdash; this is exactly <code>GetPredecessor</code> applied to the whole tree:
+<pre>void GetLargest(TreeNode* tree, ItemType&amp; data)
+{
+  while (tree-&gt;right != NULL)
+    tree = tree-&gt;right;
+  data = tree-&gt;info;
+}</pre></div></div>
+
+<div class="qa"><div class="qq">G7. Write <code>MakeEmpty</code> (and the destructor) for <code>TreeType</code>, freeing every node.</div>
+<div class="aa">The nodes must be freed after their children, so a <b>postorder</b> traversal is used:
+<pre>void Destroy(TreeNode*&amp; tree)
+{
+  if (tree != NULL)
+  {
+    Destroy(tree-&gt;left);
+    Destroy(tree-&gt;right);
+    delete tree;
+    tree = NULL;
+  }
+}
+
+void TreeType::MakeEmpty()
+{
+  Destroy(root);                 // postcondition: tree exists and is empty
+}
+
+TreeType::~TreeType()
+{
+  Destroy(root);
+}</pre>O(N). A preorder <code>delete</code> would free the node before following its links.</div></div>
+
+<div class="qa"><div class="qq">G8. Write a function that prints the BST in <b>descending</b> key order.</div>
+<div class="aa">Mirror the inorder traversal: right, node, left.
+<pre>void PrintDescending(TreeNode* tree)
+{
+  if (tree != NULL)
+  {
+    PrintDescending(tree-&gt;right);
+    cout &lt;&lt; tree-&gt;info &lt;&lt; endl;
+    PrintDescending(tree-&gt;left);
+  }
+}</pre>O(N).</div></div>
+
+<div class="qa"><div class="qq">G9. Write a <b>boolean</b> function that reports whether a given item is present in a BST (a simplified RetrieveItem).</div>
+<div class="aa"><pre>bool Search(TreeNode* tree, ItemType item)
+{
+  if (tree == NULL)
+    return false;                 // base case 1
+  else if (item &lt; tree-&gt;info)
+    return Search(tree-&gt;left, item);
+  else if (item &gt; tree-&gt;info)
+    return Search(tree-&gt;right, item);
+  else
+    return true;                  // base case 2
+}</pre>Average O(logN), worst O(N).</div></div>
+
+<div class="qa"><div class="qq">G10. Write an <b>iterative</b> (non-recursive) version of BST search.</div>
+<div class="aa"><pre>bool SearchIterative(TreeNode* tree, ItemType item)
+{
+  while (tree != NULL)
+  {
+    if (item &lt; tree-&gt;info)
+      tree = tree-&gt;left;
+    else if (item &gt; tree-&gt;info)
+      tree = tree-&gt;right;
+    else
+      return true;
+  }
+  return false;
+}</pre>Same complexity as the recursive version but without the call stack. Note the parameter can stay <code>TreeNode*</code> because the tree is never modified.</div></div>
+
+<div class="qa"><div class="qq">G11. Write a function that counts how many values in a BST are <b>greater than</b> a given key <code>k</code>, skipping subtrees that cannot contain such values.</div>
+<div class="aa"><pre>int CountGreater(TreeNode* tree, ItemType k)
+{
+  if (tree == NULL)
+    return 0;
+  if (tree-&gt;info &lt;= k)
+    return CountGreater(tree-&gt;right, k);       // whole left subtree is &lt;= k
+  else
+    return 1 + CountGreater(tree-&gt;left, k)
+             + CountGreater(tree-&gt;right, k);   // right subtree is all &gt; k
+}</pre>The pruning uses the binary search property: if the current key is &le; k, no key in its left subtree can exceed k.</div></div>
+
+<div class="qa"><div class="qq">G12. Write a function that returns the sum of all values of a BST of integers.</div>
+<div class="aa">Same recursion skeleton as <code>CountNodes</code>, with the value in place of the constant 1:
+<pre>int SumTree(TreeNode* tree)
+{
+  if (tree == NULL)
+    return 0;
+  return SumTree(tree-&gt;left) + SumTree(tree-&gt;right) + tree-&gt;info;
+}</pre>O(N) &mdash; every value contributes, so no subtree can be pruned.</div></div>
+
+<div class="qa"><div class="qq">G13. Write a function that checks whether a binary tree is a <b>full</b> tree.</div>
+<div class="aa">Apply the definition directly: every node is a leaf or has exactly two children.
+<pre>bool IsFullTree(TreeNode* tree)
+{
+  if (tree == NULL)
+    return true;
+  if (tree-&gt;left == NULL &amp;&amp; tree-&gt;right == NULL)
+    return true;                                  // a leaf
+  if (tree-&gt;left != NULL &amp;&amp; tree-&gt;right != NULL)
+    return IsFullTree(tree-&gt;left) &amp;&amp; IsFullTree(tree-&gt;right);
+  return false;                                   // exactly one child
+}</pre></div></div>
+
+<div class="qa"><div class="qq">G14. Write a function that counts the number of nodes at a given <b>level</b> of a binary tree.</div>
+<div class="aa">The root is at level 0, so each recursive step decreases the target level by one:
+<pre>int CountAtLevel(TreeNode* tree, int level)
+{
+  if (tree == NULL)
+    return 0;
+  if (level == 0)
+    return 1;
+  return CountAtLevel(tree-&gt;left,  level-1)
+       + CountAtLevel(tree-&gt;right, level-1);
+}</pre>The result can never exceed 2<sup>level</sup>.</div></div>
+
+<div class="qa"><div class="qq">G15. Modify <code>ReheapUp</code> so that it maintains a <b>min-heap</b> instead of a max-heap.</div>
+<div class="aa">Only the comparison changes &mdash; swap when the parent is <i>larger</i> than the child:
+<pre>template&lt;class ItemType&gt;
+void HeapType&lt;ItemType&gt;::ReheapUp(int root, int bottom)
+{
+  int parent;
+  if (bottom &gt; root)
+  {
+    parent = (bottom-1) / 2;
+    if (elements[parent] &gt; elements[bottom])   // was &lt;
+    {
+      Swap(elements[parent], elements[bottom]);
+      ReheapUp(root, parent);
+    }
+  }
+}</pre></div></div>
+
+<div class="qa"><div class="qq">G16. Modify <code>ReheapDown</code> for a <b>min-heap</b>.</div>
+<div class="aa">Choose the <i>smaller</i> child and swap when the root is larger:
+<pre>template&lt;class ItemType&gt;
+void HeapType&lt;ItemType&gt;::ReheapDown(int root, int bottom)
+{
+  int minChild, rightChild = root*2+2, leftChild = root*2+1;
+  if (leftChild &lt;= bottom)
+  {
+    if (leftChild == bottom)
+      minChild = leftChild;
+    else
+    {
+      if (elements[leftChild] &lt;= elements[rightChild])
+        minChild = leftChild;                 // pick the smaller one
+      else
+        minChild = rightChild;
+    }
+    if (elements[root] &gt; elements[minChild])   // was &lt;
+    {
+      Swap(elements[root], elements[minChild]);
+      ReheapDown(minChild, bottom);
+    }
+  }
+}</pre></div></div>
+
+<div class="qa"><div class="qq">G17. Using only the heap operations, write a function that returns the largest value of a max-heap without removing it, and give its complexity.</div>
+<div class="aa"><pre>template&lt;class ItemType&gt;
+ItemType PQType&lt;ItemType&gt;::Peek()
+{
+  if (length == 0)
+    throw EmptyPQ();
+  return items.elements[0];
+}</pre>O(1) &mdash; by the order property the root always contains the largest value, and the root is stored at index 0.</div></div>
+
+<div class="qa"><div class="qq">G18. Given an array of N values, describe how to obtain them in descending order using a priority queue, and give the complexity.</div>
+<div class="aa">Enqueue all N values into a max-heap priority queue, then Dequeue N times: each Dequeue returns the current largest value, so the output is in descending order.
+<pre>PQType&lt;int&gt; pq(N);
+for (int i = 0; i &lt; N; i++)  pq.Enqueue(a[i]);
+for (int i = 0; i &lt; N; i++)  pq.Dequeue(a[i]);   // a[] now descending</pre>N enqueues at O(logN) each plus N dequeues at O(logN) each gives O(N logN).</div></div>
+
+<div class="qa"><div class="qq">G19. Write a function that, given the index <code>i</code> of an element in the heap array, prints the values of its parent and both children (or reports that they do not exist), for a heap of the given <code>length</code>.</div>
+<div class="aa"><pre>void ShowFamily(ItemType elements[], int length, int i)
+{
+  int parent = (i-1)/2, l = 2*i+1, r = 2*i+2;
+  if (i &gt; 0)      cout &lt;&lt; "parent: " &lt;&lt; elements[parent] &lt;&lt; endl;
+  else            cout &lt;&lt; "no parent (root)" &lt;&lt; endl;
+  if (l &lt; length) cout &lt;&lt; "left  : " &lt;&lt; elements[l] &lt;&lt; endl;
+  else            cout &lt;&lt; "no left child"  &lt;&lt; endl;
+  if (r &lt; length) cout &lt;&lt; "right : " &lt;&lt; elements[r] &lt;&lt; endl;
+  else            cout &lt;&lt; "no right child" &lt;&lt; endl;
+}</pre>Index arithmetic: root at 0, left child 2i+1, right child 2i+2, parent (i&minus;1)/2.</div></div>
+
+<div class="qa"><div class="qq">G20. A tree class must report whether the tree is <b>balanced enough</b>, defined as: the heights of the left and right subtrees of the root differ by at most 1. Write it.</div>
+<div class="aa"><pre>bool RootBalanced(TreeNode* tree)
+{
+  if (tree == NULL)
+    return true;
+  int l = Height(tree-&gt;left);
+  int r = Height(tree-&gt;right);
+  int d = l - r;
+  if (d &lt; 0) d = -d;
+  return d &lt;= 1;
+}</pre>Uses the <code>Height</code> function of G1; O(N).</div></div>
+
+<div class="qa"><div class="qq">G21. Write a function that inserts an item into a BST <b>only if</b> it is not already present (the InsertItem precondition says item must not be in the tree &mdash; make the code enforce it).</div>
+<div class="aa"><pre>void InsertUnique(TreeNode*&amp; tree, ItemType item)
+{
+  if (tree == NULL)                    // base case: place found
+  {
+    tree = new TreeNode;
+    tree-&gt;left = NULL;
+    tree-&gt;right = NULL;
+    tree-&gt;info = item;
+  }
+  else if (item &lt; tree-&gt;info)
+    InsertUnique(tree-&gt;left, item);
+  else if (item &gt; tree-&gt;info)
+    InsertUnique(tree-&gt;right, item);
+  // else: item == tree-&gt;info, so do nothing (duplicate rejected)
+}</pre>The only change from the lecture&rsquo;s <code>Insert</code> is that the final <code>else</code> becomes <code>else if (item &gt; tree-&gt;info)</code>, so equal keys fall through and are ignored.</div></div>
+
+<div class="qa"><div class="qq">G22. Given the postcondition "Print the values of the tree that lie between two keys <code>low</code> and <code>high</code> inclusive, in ascending order", write the function.</div>
+<div class="aa"><pre>void PrintRange(TreeNode* tree, ItemType low, ItemType high)
+{
+  if (tree != NULL)
+  {
+    if (tree-&gt;info &gt; low)                 // left subtree may hold values &ge; low
+      PrintRange(tree-&gt;left, low, high);
+    if (tree-&gt;info &gt;= low &amp;&amp; tree-&gt;info &lt;= high)
+      cout &lt;&lt; tree-&gt;info &lt;&lt; " ";
+    if (tree-&gt;info &lt; high)                // right subtree may hold values &le; high
+      PrintRange(tree-&gt;right, low, high);
+  }
+}</pre>It is an inorder traversal (so the output is ascending) in which the binary search property prunes the subtrees that cannot contain any value of the range.</div></div>
+
+<div class="qa"><div class="qq">G23. Explain, with reference to the code, why <code>Delete</code> as written in the lecture crashes if the item is not present, and how the precondition prevents it.</div>
+<div class="aa"><code>Delete</code> has no <code>tree == NULL</code> test: it only compares <code>item</code> with <code>tree-&gt;info</code>. If the key is absent, the recursion eventually reaches a NULL pointer and dereferences it, causing a crash. This is exactly why the specification states the precondition "one and only one element in tree has a key matching item&rsquo;s key" &mdash; the caller must guarantee presence, for example by calling <code>RetrieveItem</code> first. A defensive version would begin with <code>if (tree == NULL) return;</code>.</div></div>
+
+</body></html>
